@@ -1,28 +1,25 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../../config/mysql_db";
-import { Session } from "./Session";
-import { Game } from "./Game";
+import { User } from "./User";
 
-export class User extends Model {}
+export class Game extends Model {}
 
-User.init({
+Game.init({
     id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
     },
-    email: {
+    status: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false
+    winner: {
+        type: DataTypes.UUID,
+        allowNull: true,
     }
 }, {
     sequelize,
-    tableName: 'User',
+    tableName: 'Game',
     timestamps: false,
 })
-User.hasOne(Session);
-User.belongsToMany(Game, { through: 'GameUser', timestamps: false });
