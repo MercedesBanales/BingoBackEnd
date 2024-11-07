@@ -15,3 +15,7 @@ export const remove = async (token: string): Promise<void> => {
     const session = await sessionsRepository.find({ where: { token: token } });
     await sessionsRepository.update(session!.id, null);
 }
+
+export const find = async (criteria: { where: { [key: string]: any } }): Promise<SessionDTO> => {
+    return await sessionsRepository.find(criteria);
+}
