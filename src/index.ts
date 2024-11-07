@@ -1,7 +1,7 @@
 import express from 'express';
 import authenticationRoutes from './routes/authenticationRoutes';
-import { dbSync, sequelize } from './config/database';
-import { User } from './dataAccess/models/User';
+import { dbSync, sequelize } from './config/mysql_db';
+import { connectToMongo } from './config/mongo_db';
 
 const app = express();
 const port = parseInt(process.env.PORT!);
@@ -26,11 +26,12 @@ const main = async () => {
         console.log(`Server running on ${process.env.URL}${port}`)
         try {
 			await sequelize.authenticate();
-			console.log(
-				"La conexión con la base de datos ha sido establecida correctamente.",
+            await connectToMongo();
+            console.log(
+				"Successfully connected to database.",
 			);
 		} catch (error) {
-			console.error("No se pudo conectar a la base de datos:", error);
+			console.error("Error when connecting to database:", error);
 		}
     })
 };
