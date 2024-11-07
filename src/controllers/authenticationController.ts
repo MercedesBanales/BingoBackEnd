@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
-import { LoginRequest, LoginResponse } from '../models/authentication';
+import { LoginRequest, LoginResponse } from '../apiModels/authentication';
 import { NotFoundException } from '../validators/exceptions/notFoundException';
-import { UserDTO } from '../utils/DTOs/userDTO';
-import * as userService from '../services/userService';
 import * as sessionService from '../services/sessionService';
-import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -12,16 +9,7 @@ dotenv.config();
 export const login = async (req: Request, res: Response) => {
     try {
         const request: LoginRequest = req.body;
-        const user: UserDTO = await userService.find(request.email, request.password);
-        const token = jwt.sign(
-            { 
-                id: user.id, 
-                email: user.email
-            },
-            process.env.JWT_SECRET as string,
-            { expiresIn: '1h' }
-        );
-        sessionService.create(token, user);
+        const token = await sessionService.create(request.email, request.password);
         const response: LoginResponse = { token: token, message: "Logged in successfully", succeeded: true };
         res.status(200).send(response);
 
@@ -29,5 +17,15 @@ export const login = async (req: Request, res: Response) => {
         let code = 500;
         if (error instanceof NotFoundException) code = 404;
         res.status(code).send({ message: error.message });
+    }
+}
+
+export const logout = async (req: Request, res: Response) => {
+    try {
+        const token = req.headers['authorization'];
+        await sessionService.remove(token!);
+        res.status(200).send({ message: "Logged out successfully" });
+    } catch (error: any) {
+        res.status(500).send({ message: error.message });
     }
 }

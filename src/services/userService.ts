@@ -1,9 +1,6 @@
-import { User } from "../models/user";
 import { UserDTO } from "../utils/DTOs/userDTO";
+import * as usersRepository from '../dataAccess/repositories/usersRepository';
 
 export const find = async (email: string, password: string): Promise<UserDTO> => {
-    return {
-        id: 1,
-        email: ''
-    }
+    return await usersRepository.find(email, password);
 }
