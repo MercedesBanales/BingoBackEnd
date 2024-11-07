@@ -2,6 +2,7 @@ import express from 'express';
 import authenticationRoutes from './routes/authenticationRoutes';
 import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
+import { User } from './dataAccess/models/User';
 
 const app = express();
 const port = parseInt(process.env.PORT!);
@@ -21,6 +22,8 @@ const main = async () => {
     app.get("/", (req, res) => {
         res.send('Main');
     });
+
+    // await User.create({ email: "user@gmail.com", password: "1234" });
     
     app.listen(port, async () => {
         console.log(`Server running on ${process.env.URL}${port}`)
