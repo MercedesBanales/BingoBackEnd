@@ -30,3 +30,7 @@ export const checkEdges = (card: number[][]): boolean => {
     && card[card.length - 1][0] === 0 
     && card[card.length - 1][card.length - 1] === 0;
 }
+
+export const checkFull = (card: number[][]): boolean => {
+    return card.every(row => row.every(cell => cell === 0));
+}
