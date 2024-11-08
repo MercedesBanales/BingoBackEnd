@@ -23,3 +23,7 @@ Game.init({
     tableName: 'Game',
     timestamps: false,
 })
+
+Game.belongsToMany(User, { through: 'GameUser', foreignKey: 'GameId', otherKey: 'UserId', timestamps: false });
+
+

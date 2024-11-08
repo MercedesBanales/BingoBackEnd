@@ -25,4 +25,4 @@ User.init({
     timestamps: false,
 })
 User.hasOne(Session);
-User.belongsToMany(Game, { through: 'GameUser', timestamps: false });
+

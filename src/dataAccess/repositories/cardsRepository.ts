@@ -1,5 +1,5 @@
 import { Card } from '../schemas/cardSchema';
-import { CardDTO } from '../../utils/DTOs/CardDTO';
+import { CardDTO } from '../../utils/DTOs/cardDTO';
 import { NotFoundException } from '../../validators/exceptions/notFoundException';
 
 export const find = async (criteria: { [key: string]: any }): Promise<CardDTO> => {
@@ -15,15 +15,15 @@ export const find = async (criteria: { [key: string]: any }): Promise<CardDTO> =
 }
 
 export const update = async (player_id: string, game_id: string, coord_x: number, coord_y: number): Promise<CardDTO> => {
-    await Card.findOneAndUpdate(
+    await Card.updateOne(
         { playerId: player_id, gameId: game_id }, 
         { $set: { [`card.${coord_x}.${coord_y}`]: 0 } }
     );
     return await find({ playerId: player_id, gameId: game_id }); 
 }
 
-export const create = async (player_id: string, game_id: string, card: number[][]): Promise<string> => {
-    const new_card = new Card({ playerId: player_id, gameId: game_id, card });
+export const create = async (dto: CardDTO): Promise<string> => {
+    const new_card = new Card({ playerId: dto.player_id, gameId: dto.game_id, card: dto.card });
     await new_card.save();
     return new_card._id.toString();
 }
