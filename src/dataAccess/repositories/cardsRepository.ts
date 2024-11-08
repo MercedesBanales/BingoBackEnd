@@ -21,3 +21,9 @@ export const update = async (player_id: string, game_id: string, coord_x: number
     );
     return await find({ playerId: player_id, gameId: game_id }); 
 }
+
+export const create = async (player_id: string, game_id: string, card: number[][]): Promise<string> => {
+    const new_card = new Card({ playerId: player_id, gameId: game_id, card });
+    await new_card.save();
+    return new_card._id.toString();
+}
