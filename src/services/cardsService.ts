@@ -7,7 +7,11 @@ export const setChosenNumber = async (player_id: string, game_id: string, coord_
 }
 
 export const checkWin = async (card: CardDTO): Promise<boolean> => {
-    return checkRows(card.card) || checkColumns(card.card) || checkDiagonals(card.card) || checkEdges(card.card);
+    return checkFull(card.card) 
+    || checkRows(card.card) 
+    || checkColumns(card.card) 
+    || checkDiagonals(card.card) 
+    || checkEdges(card.card)
 }
 
 export const checkRows = (card: number[][]): boolean => {
