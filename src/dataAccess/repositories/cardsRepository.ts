@@ -2,10 +2,6 @@ import { Card } from '../schemas/cardSchema';
 import { CardDTO } from '../../utils/DTOs/cardDTO';
 import { NotFoundException } from '../../validators/exceptions/notFoundException';
 
-const MAX_CARD_NUMBER = 75;
-const MAX_ROW_LENGTH = 5;
-const MAX_COL_LENGTH = 5;
-
 export const find = async (criteria: { [key: string]: any }): Promise<CardDTO> => {
     const card = await Card.findOne(criteria);
     if (!card) throw new NotFoundException('Card not found');
@@ -34,7 +30,7 @@ export const create = async (player_id: string, game_id: string): Promise<CardDT
 }
 
 const generateCard = (): number[][] => {
-    const numbers = Array.from({ length: MAX_CARD_NUMBER }, (_, i) => i + 1);
+    const numbers = Array.from({ length: parseInt(process.env.MAX_CARD_NUMBER!) }, (_, i) => i + 1);
 
     // Shuffle the numbers using Fisher-Yates algorithm
     for (let i = numbers.length - 1; i > 0; i--) {
@@ -45,9 +41,9 @@ const generateCard = (): number[][] => {
     const card: number[][] = [];
     let counter = 0;
 
-    for (let row = 0; row < MAX_ROW_LENGTH; row++) {
+    for (let row = 0; row < parseInt(process.env.MAX_ROW_LENGTH!); row++) {
         const rowValues: (number)[] = [];
-        for (let col = 0; col < MAX_COL_LENGTH; col++) {
+        for (let col = 0; col < parseInt(process.env.MAX_COL_LENGTH!); col++) {
             if (row === 2 && col === 2) {
                 rowValues.push(0); // Center space is free
             } else {

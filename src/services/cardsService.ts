@@ -2,12 +2,15 @@ import * as cardsRepository from '../dataAccess/repositories/cardsRepository';
 import { CardDTO } from '../utils/DTOs/cardDTO';
 
 export const setChosenNumber = async (player_id: string, game_id: string, coord_x: number, coord_y: number) => {
-    const updated_card = await cardsRepository.update(player_id, game_id, coord_x, coord_y); 
-    return { updated_card, win: checkWin(updated_card) };
+    return await cardsRepository.update(player_id, game_id, coord_x, coord_y); 
 }
 
 export const create = async (player_id: string, game_id: string): Promise<CardDTO> => {
     return await cardsRepository.create(player_id, game_id);
+}
+
+export const find = async (player_id: string, game_id: string): Promise<CardDTO> => {
+    return await cardsRepository.find({ playerId: player_id, gameId: game_id });
 }
 
 export const checkWin = (card: CardDTO): boolean => {
