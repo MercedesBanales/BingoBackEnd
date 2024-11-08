@@ -1,6 +1,8 @@
-import { CardDTO } from "../DTOs/cardDTO";
-
 export interface PlayResponse {
-    card: CardDTO | null;
+    card: number[][];
     message: string;
+}
+
+export interface GAME_STATUS {
+    
 }

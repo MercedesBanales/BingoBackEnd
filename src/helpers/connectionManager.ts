@@ -1,3 +1,5 @@
+import { DataPacket } from "../utils/interfaces/DataPacket";
+
 export interface Connection {
     socket: WebSocket;
     player_id: string;
@@ -19,14 +21,20 @@ export const getConnectionsByGameRoom = (game_room: number) : Connection[] => {
     return connections.filter(connection => connection.game_room === game_room);
 }
 
-export const send = (player_id: string, message: string) : void=> {
+export const send = (player_id: string,  success: boolean, message?: string) : void=> {
     const connection = connections.find(connection => connection.player_id === player_id);
-    if (connection) connection.socket.send(message);
+    if (connection) {
+        const data = JSON.stringify({ data: { message }, 
+            type: 'RESPONSE', 
+            action: null,
+            success: success});
+        connection.socket.send(data);
+    }
 }
 
-export const broadcast = (game_room: number, message: string) : void => {
+export const broadcast = (game_room: number, message: string, success: boolean) : void => {
     const connectionsInRoom = getConnectionsByGameRoom(game_room);
-    connectionsInRoom.forEach(connection => send(connection.player_id, message));
+    connectionsInRoom.forEach(connection => send(connection.player_id, success, message));
 }
 
 export const disconnectAll = (game_room: number) : void=> {

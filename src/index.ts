@@ -4,6 +4,7 @@ import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
 import { connect, disconnect, getConnectionsByGameRoom, send, broadcast, disconnectAll } from './helpers/connectionManager';
 import * as gamesService from './services/gamesService';
+import { PlayResponse } from './utils/interfaces/PlayResponse';
 
 const WebSocket = require('ws');
 const app = express();
@@ -50,7 +51,7 @@ const main = async () => {
         const player_id = url.split('/')[1];
         const game_room = parseInt(url.split('/')[2]);
 
-        send(player_id, `Player ${player_id} connected to game room ${game_room}`);
+        send(player_id, true, `Player ${player_id} connected to game room ${game_room}`);
         connect(ws, player_id, game_room);
 
         let playersInRoom = getConnectionsByGameRoom(game_room);
@@ -67,11 +68,32 @@ const main = async () => {
             }, MAX_WAIT_TIME);
         }
 
-        ws.on('message', (message: any) => {
-            console.log('Received:', message);
+        ws.on('message', async (message: any) => {
+            const data = JSON.parse(message.toString());
+            switch (data.action) {
+                case 'PUT':
+                    try {
+                        const play_response : PlayResponse = await gamesService.play(player_id, data.game_id, data.coord_x, data.coord_y);
+                        send(player_id, true, play_response.message);
+                        break;
+                    } catch (error: any) {
+                        send(player_id, false, error.message);
+                    }
+                case 'BINGO':
+                    try {
+                        const bingo_response : PlayResponse = await gamesService.bingo(player_id, data.game_id);
+                        let success = true;
+                        if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) success = false;
+                        broadcast(data.game_id, bingo_response.message, success);
+                        break;
+                    } catch (error: any) {
+                        send(player_id, false, error.message);
+                    }
+            }
         });
 
         ws.on('close', () => {
+            disconnect(ws);
             console.log('WebSocket connection closed');
         });
     })

@@ -1,6 +1,7 @@
 export interface DataPacket {
-    clientData: { coord_x: number, coord_y: number, value: number } | null;
-    serverData: { card: number[][] }
+    data: { coord_x: number, coord_y: number, game_id: string } 
+    | { card: number[][] | null, message: string | null} | null;
     type: 'REQUEST' | 'RESPONSE';
-    action: 'PUT' | 'BINGO';
+    action: 'PUT' | 'BINGO' | null;
+    success: boolean;
 }
