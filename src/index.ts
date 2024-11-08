@@ -2,13 +2,12 @@ import express from 'express';
 import authenticationRoutes from './routes/authenticationRoutes';
 import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
-import { User } from './dataAccess/models/User';
-import { Card } from './dataAccess/schemas/cardSchema';
-import * as gamesRepository from './dataAccess/repositories/gamesRepository';
-import { GameDTO } from './utils/DTOs/gameDTO';
+import http from 'http';
 
+const WebSocket = require('ws');
 const app = express();
 const port = parseInt(process.env.PORT!);
+const server = http.createServer(app);
 
 const main = async () => {
     try {
@@ -40,6 +39,18 @@ const main = async () => {
 			console.error("Error when connecting to database:", error);
 		}
     })
+
+    const wsServer = new WebSocket.Server({ server }) 
+    wsServer.on('connection', (ws: any) => {
+        ws.on('message', (message: any) => {
+            console.log('Received:', message);
+        });
+
+        ws.on('close', () => {
+            console.log('WebSocket connection closed');
+        });
+    })
+
 };
 
 main();
