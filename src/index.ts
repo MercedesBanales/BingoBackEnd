@@ -56,14 +56,16 @@ const main = async () => {
 
         let playersInRoom = getConnectionsByGameRoom(game_room);
         if (playersInRoom.length < 2) {
-            setTimeout(() => {
+            setTimeout(async () => {
                 playersInRoom = getConnectionsByGameRoom(game_room);
                 if (playersInRoom.length < 2) {
                     console.log(`Game room ${game_room} did not get enough players. Closing room.`);
+                    broadcast(game_room, 'Game room did not get enough players. Closing room.', false);
                     disconnectAll(game_room);
                 } else {
                     console.log(`Game room ${game_room} is starting with ${playersInRoom.length} players.`);
-                    gamesService.start(playersInRoom.map(player => player.player_id));
+                    const game_id = await gamesService.start(playersInRoom.map(player => player.player_id));
+                    broadcast(game_room, game_id, true);
                 }
             }, MAX_WAIT_TIME);
         }

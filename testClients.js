@@ -6,8 +6,6 @@ const createPlayerConnection = (playerId, gameRoom) => {
     
     socket.on('open', () => {
         console.log(`Player ${playerId} connected to game room ${gameRoom}`);
-        const data = {data: {card: null, message: `Hello from player ${playerId}`}, type: "REQUEST", action: "PUT"};
-        socket.send(JSON.stringify(data));
     });
 
     socket.on('message', (data) => {

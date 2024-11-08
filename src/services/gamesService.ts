@@ -9,14 +9,14 @@ export enum StatusType {
     PLAY= 'PLAY '
 }
 
-export const start = async (player_ids: string[]) : Promise<CardDTO[]>=> {
+export const start = async (player_ids: string[]) : Promise<string>=> {
     const game_id = await gamesRepository.create(player_ids);
     const cards: CardDTO[] = [];
     player_ids.forEach(async player_id => {
         const card = await cardsService.create(player_id, game_id);
         cards.push(card);
     });
-    return cards;
+    return game_id;
 }
 
 export const play = async (player_id: string, game_id: string, coord_x: number, coord_y: number) : Promise<PlayResponse>=> {
