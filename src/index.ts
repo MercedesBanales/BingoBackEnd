@@ -2,12 +2,15 @@ import express from 'express';
 import authenticationRoutes from './routes/authenticationRoutes';
 import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
-import http from 'http';
+import { connect, disconnect, getConnectionsByGameRoom, send, broadcast, disconnectAll } from './helpers/connectionManager';
 
 const WebSocket = require('ws');
 const app = express();
 const port = parseInt(process.env.PORT!);
-const server = http.createServer(app);
+const server = require('http').createServer(app);
+
+const MIN_WAIT_TIME = 30000; // 30 seconds
+const MAX_WAIT_TIME = 60000; // 1 minute
 
 const main = async () => {
     try {
@@ -27,7 +30,7 @@ const main = async () => {
 
     // await User.create({ email: "user@gmail.com", password: "1234" });
     
-    app.listen(port, async () => {
+    server.listen(port, async () => {
         console.log(`Server running on ${process.env.URL}${port}`)
         try {
 			await sequelize.authenticate();
@@ -40,9 +43,12 @@ const main = async () => {
 		}
     })
 
-    const wsServer = new WebSocket.Server({ server }) 
-    wsServer.on('connection', (ws: any) => {
-        ws.on('message', (message: any) => {
+    const wsServer = new WebSocket.Server({ server: server }) 
+    wsServer.on('connection', function connection(ws: any) {
+        console.log('WebSocket connection established');
+        ws.send('Welcome to the WebSocket server');
+
+        ws.on('message', function incoming(message: any) {
             console.log('Received:', message);
         });
 
