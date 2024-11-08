@@ -27,8 +27,6 @@ export const bingo = async (player_id: string, game_id: string) : Promise<PlayRe
     const win = cardsService.checkWin(card);
     if (win) return notifyWin(card);
     return { card, message: DISQUALIFIED_MESSAGE };
-
-
 }
 
 export const notifyWin = async (card: CardDTO) : Promise<PlayResponse> => {

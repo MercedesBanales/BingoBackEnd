@@ -10,7 +10,7 @@ const createPlayerConnection = (playerId, gameRoom) => {
     });
 
     socket.on('message', (data) => {
-        console.log(data);
+        console.log(data.toString());
     });
 
     socket.on('close', () => {
