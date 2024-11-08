@@ -1,5 +1,5 @@
 export interface CardDTO {
-    id: string;
+    id?: string;
     player_id: string;
     game_id: string;
     card: number[][];
