@@ -15,7 +15,7 @@ export const find = async (criteria: { [key: string]: any }): Promise<CardDTO> =
 }
 
 export const update = async (player_id: string, game_id: string, coord_x: number, coord_y: number): Promise<CardDTO> => {
-    await Card.findOneAndUpdate(
+    await Card.updateOne(
         { playerId: player_id, gameId: game_id }, 
         { $set: { [`card.${coord_x}.${coord_y}`]: 0 } }
     );

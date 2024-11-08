@@ -2,7 +2,7 @@ import { UserDTO } from './userDTO';
 
 export interface GameDTO {
     id: string;
-    players: number[],
+    players: string[],
     status: string,
-    winner: UserDTO | null
+    winner: string
 }

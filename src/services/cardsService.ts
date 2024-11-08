@@ -6,7 +6,7 @@ export const setChosenNumber = async (player_id: string, game_id: string, coord_
     return { updated_card, win: checkWin(updated_card) };
 }
 
-export const checkWin = async (card: CardDTO): Promise<boolean> => {
+export const checkWin = (card: CardDTO): boolean => {
     return checkFull(card.card) 
     || checkRows(card.card) 
     || checkColumns(card.card) 
