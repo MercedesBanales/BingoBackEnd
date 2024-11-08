@@ -6,8 +6,14 @@ import { CardDTO } from '../utils/DTOs/cardDTO';
 const WIN_MESSAGE: string = "You won!";
 const PLAY_MESSAGE: string = "Keep playing";
 
-export const start = async (player_ids: string[]) => {
-    await gamesRepository.create(player_ids);
+export const start = async (player_ids: string[]) : Promise<CardDTO[]>=> {
+    const game_id = await gamesRepository.create(player_ids);
+    const cards: CardDTO[] = [];
+    player_ids.forEach(async player_id => {
+        const card = await cardsService.create(player_id, game_id);
+        cards.push(card);
+    });
+    return cards;
 }
 
 export const play = async (player_id: string, game_id: string, coord_x: number, coord_y: number) : Promise<PlayResponse | null>=> {

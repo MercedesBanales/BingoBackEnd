@@ -6,6 +6,10 @@ export const setChosenNumber = async (player_id: string, game_id: string, coord_
     return { updated_card, win: checkWin(updated_card) };
 }
 
+export const create = async (player_id: string, game_id: string): Promise<CardDTO> => {
+    return await cardsRepository.create(player_id, game_id);
+}
+
 export const checkWin = (card: CardDTO): boolean => {
     return checkFull(card.card) 
     || checkRows(card.card) 

@@ -3,6 +3,7 @@ import authenticationRoutes from './routes/authenticationRoutes';
 import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
 import { connect, disconnect, getConnectionsByGameRoom, send, broadcast, disconnectAll } from './helpers/connectionManager';
+import * as gamesService from './services/gamesService';
 
 const WebSocket = require('ws');
 const app = express();
@@ -52,6 +53,19 @@ const main = async () => {
         send(player_id, `Player ${player_id} connected to game room ${game_room}`);
         connect(ws, player_id, game_room);
 
+        let playersInRoom = getConnectionsByGameRoom(game_room);
+        if (playersInRoom.length < 2) {
+            setTimeout(() => {
+                playersInRoom = getConnectionsByGameRoom(game_room);
+                if (playersInRoom.length < 2) {
+                    console.log(`Game room ${game_room} did not get enough players. Closing room.`);
+                    disconnectAll(game_room);
+                } else {
+                    console.log(`Game room ${game_room} is starting with ${playersInRoom.length} players.`);
+                    gamesService.start(playersInRoom.map(player => player.player_id));
+                }
+            }, MAX_WAIT_TIME);
+        }
 
         ws.on('message', (message: any) => {
             console.log('Received:', message);
