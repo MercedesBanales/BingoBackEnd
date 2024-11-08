@@ -1,5 +1,5 @@
 import * as cardsRepository from '../dataAccess/repositories/cardsRepository';
-import { CardDTO } from '../utils/DTOs/CardDTO';
+import { CardDTO } from '../utils/DTOs/cardDTO';
 
 export const setChosenNumber = async (player_id: string, game_id: string, coord_x: number, coord_y: number) => {
     const updated_card = await cardsRepository.update(player_id, game_id, coord_x, coord_y); 

@@ -4,8 +4,8 @@ import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
 import { User } from './dataAccess/models/User';
 import { Card } from './dataAccess/schemas/cardSchema';
-import * as cardsRepository from './dataAccess/repositories/cardsRepository';
-import * as cardsService from './services/cardsService';
+import * as gamesRepository from './dataAccess/repositories/gamesRepository';
+import { GameDTO } from './utils/DTOs/gameDTO';
 
 const app = express();
 const port = parseInt(process.env.PORT!);
