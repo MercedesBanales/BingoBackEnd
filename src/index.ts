@@ -5,6 +5,7 @@ import { connectToMongo } from './config/mongo_db';
 import { User } from './dataAccess/models/User';
 import { Card } from './dataAccess/schemas/cardSchema';
 import * as cardsRepository from './dataAccess/repositories/cardsRepository';
+import * as cardsService from './services/cardsService';
 
 const app = express();
 const port = parseInt(process.env.PORT!);
