@@ -44,11 +44,16 @@ const main = async () => {
     })
 
     const wsServer = new WebSocket.Server({ server: server }) 
-    wsServer.on('connection', function connection(ws: any) {
-        console.log('WebSocket connection established');
-        ws.send('Welcome to the WebSocket server');
+    wsServer.on('connection', (ws: any, req: any) => {
+        const url = req.url;
+        const player_id = url.split('/')[1];
+        const game_room = parseInt(url.split('/')[2]);
 
-        ws.on('message', function incoming(message: any) {
+        send(player_id, `Player ${player_id} connected to game room ${game_room}`);
+        connect(ws, player_id, game_room);
+
+
+        ws.on('message', (message: any) => {
             console.log('Received:', message);
         });
 
