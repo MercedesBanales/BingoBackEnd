@@ -3,6 +3,8 @@ import authenticationRoutes from './routes/authenticationRoutes';
 import { dbSync, sequelize } from './config/mysql_db';
 import { connectToMongo } from './config/mongo_db';
 import { User } from './dataAccess/models/User';
+import { Card } from './dataAccess/schemas/cardSchema';
+import * as cardsRepository from './dataAccess/repositories/cardsRepository';
 
 const app = express();
 const port = parseInt(process.env.PORT!);
