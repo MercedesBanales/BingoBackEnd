@@ -58,25 +58,27 @@ const main = async () => {
         const player_id = url.split('/')[1];
 
         console.log(`Player ${player_id} connected to lobby`);
-        connectionManager.send(player_id, true, `Player ${player_id} connected to lobby`);
         connectionManager.connect(ws, player_id);
 
-        let playersInRoom = connectionManager.getPlayersInLobby();
-        if (playersInRoom.length < 2) {
-            setTimeout(async () => {
-                playersInRoom = connectionManager.getPlayersInLobby();
-                if (playersInRoom.length < 2) {
-                    console.log(`Not enough players in lobby. Disconnecting player ${player_id}`);
-                    connectionManager.send(player_id, false, 'Game room did not get enough players. Closing room.');
-                    connectionManager.disconnectAll();
-                } else {
-                    const game_id = await gamesService.start(playersInRoom.map(player => player.player_id));
-                    console.log(`Game ${game_id} is starting with ${playersInRoom.length} players.`);
-                    connectionManager.start(game_id);
-                    connectionManager.send(player_id, true, "Game has begun");
-                }
-            }, MAX_WAIT_TIME);
-        }
+        setTimeout(() => {
+            connectionManager.setAvailable(player_id);
+        }, MIN_WAIT_TIME);
+
+        setTimeout(async () => {
+            const availablePlayersInLobby = connectionManager.getAvailablePlayersInLobby();
+            if (connectionManager.getCurrentPlayer(player_id).status === "PLAYING") return;
+            if (availablePlayersInLobby.length < 2) {
+                console.log(`Not enough players in lobby. Disconnecting player ${player_id}`);
+                connectionManager.send(player_id, false, 'Game room did not get enough players. Closing room.');
+                connectionManager.disconnectAll();
+            } else {
+                const game_id = await gamesService.start(availablePlayersInLobby.map(player => player.player_id));
+                console.log(`Game ${game_id} is starting with ${availablePlayersInLobby.length} players.`);
+                connectionManager.start(game_id);
+            }
+        }, MAX_WAIT_TIME);
+
+
 
         ws.on('message', async (message: any) => {
             const data = JSON.parse(message.toString());
