@@ -9,8 +9,8 @@ dotenv.config();
 export const login = async (req: Request, res: Response) => {
     try {
         const request: LoginRequest = req.body;
-        const token = await sessionService.create(request.email, request.password);
-        const response: LoginResponse = { token: token, message: "Logged in successfully", succeeded: true };
+        const {token, id} = await sessionService.create(request.email, request.password);
+        const response: LoginResponse = { token, id, message: "Logged in successfully", succeeded: true };
         res.status(200).send(response);
 
     } catch (error:any) {
