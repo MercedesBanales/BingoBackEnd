@@ -26,7 +26,7 @@ export const start = (game_id: string) : void => {
         if (connection.status === 'AVAILABLE') {
             connection.status = 'PLAYING';
             connection.game_id = game_id;
-            send(connection.player_id, true, 'Game started')
+            send(connection.player_id, true, game_id, 'Game started')
         }
     });
 }
@@ -39,10 +39,10 @@ export const getAvailablePlayersInLobby = () : Connection[] => {
     return filterConnections(connection => connection.status === 'AVAILABLE');
 }
 
-export const send = (player_id: string,  success: boolean, message?: string) : void=> {
+export const send = (player_id: string,  success: boolean,  game_id?: string, message?: string) : void=> {
     const connection = connections.find(connection => connection.player_id === player_id);
     if (connection) {
-        const data = JSON.stringify({ data: { message }, 
+        const data = JSON.stringify({ data: { message, game_id }, 
             type: 'RESPONSE', 
             action: null,
             success: success} as DataPacket);
@@ -52,7 +52,7 @@ export const send = (player_id: string,  success: boolean, message?: string) : v
 
 export const broadcast = (game_id: string, message: string, success: boolean) : void => {
     const connectionsInLobby = filterConnections(connection => connection.game_id === game_id);
-    connectionsInLobby.forEach(connection => send(connection.player_id, success, message));
+    connectionsInLobby.forEach(connection => send(connection.player_id, success, game_id, message));
 }
 
 export const disconnectAll = () : void=> {
