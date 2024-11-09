@@ -4,6 +4,6 @@ import { NotFoundException } from '../../validators/exceptions/notFoundException
 
 export const find = async (email: string, password: string): Promise<UserDTO> => {
     const user = await User.findOne({ where: { email, password } });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('Invalid email or password');
     return { id: user.getDataValue("id"), email: user.getDataValue("email") };
 }

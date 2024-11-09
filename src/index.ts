@@ -5,6 +5,7 @@ import { connectToMongo } from './config/mongo_db';
 import { connect, disconnect, getConnectionsByGameRoom, send, broadcast, disconnectAll } from './helpers/connectionManager';
 import * as gamesService from './services/gamesService';
 import { PlayResponse } from './utils/interfaces/PlayResponse';
+import corsMiddleware from 'cors';
 
 const WebSocket = require('ws');
 const app = express();
@@ -21,6 +22,12 @@ const main = async () => {
     } catch (error: any) {
         console.log(error)
     }
+
+    app.use(corsMiddleware({
+        origin: `${process.env.URL}3001`,
+        methods: 'GET,POST,PUT,DELETE',
+        credentials: true
+    }));
 
     app.use(express.json());
     app.use("/api", authenticationRoutes);
