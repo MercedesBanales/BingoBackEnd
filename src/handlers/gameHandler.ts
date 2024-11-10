@@ -16,9 +16,13 @@ export const createGame = async (game_id: string) : Promise<void> => {
     activeGames.push({ game_id, players: players, bingo_sequence: [] });
 }
 
-export const removeGame = (game_id: string) : void => {
-    const game = activeGames.find(game => game.game_id === game_id);
+export const removePlayer = (game_id: string, player_id: string) : void => {
+    const game: ActiveGame | undefined = activeGames.find(game => game.game_id === game_id);
     if (!game) throw new NotFoundException('Game not found');
+    game.players = game.players.filter(player => player.id !== player_id);
+}
+
+export const removeGame = (game_id: string) : void => {
     activeGames = activeGames.filter(game => game.game_id !== game_id);
 }
 

@@ -85,6 +85,5 @@ const filterConnections = (condition: (connection: Connection) => boolean) : Con
 }
 
 export const find = (game_id: string) : boolean => {
-    gameHandler.removeGame(game_id);
     return connections.some(connection => connection.game_id === game_id);
 }

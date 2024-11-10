@@ -97,7 +97,12 @@ const main = async () => {
                         response as BingoDataPacket;
                         const bingo_response : PlayResponse = await gamesService.bingo(player_id, response.data.game_id);
                         if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) {
-                            connectionManager.send(player_id, false, 'BINGO', '', 'You have been disqualified');
+                            connectionManager.send(response.data.player_id, false, 'BINGO', response.data.game_id, 'You have been disqualified');
+                            const players = await connectionManager.getGamePlayers(response.data.game_id);
+                            const remaining_players = players.filter(player => player.id !== response.data.player_id);
+                            remaining_players.forEach(async player => {
+                                connectionManager.send(player.id, true, 'GET_PLAYERS', response.data.game_id, '', [[]], remaining_players);
+                            })
                         } else {
                             connectionManager.broadcast('BINGO', response.data.game_id, bingo_response.message, true);
                         }
@@ -108,7 +113,8 @@ const main = async () => {
                 case 'GET_CARD':
                     try {
                         response as CardDataPacket;
-                        const card = await gamesService.getCard(player_id, response.data.game_id);
+                        console.log(response.data)
+                        const card = await gamesService.getCard(response.data.player_id, response.data.game_id);
                         connectionManager.send(response.data.player_id, true, 'GET_CARD', response.data.game_id, '', card.card);
                         break;
                     } catch (error: any) {
