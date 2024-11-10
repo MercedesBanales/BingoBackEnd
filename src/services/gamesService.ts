@@ -1,5 +1,6 @@
 import * as gamesRepository from '../dataAccess/repositories/gamesRepository';
 import * as cardsService from './cardsService';
+import * as usersService from './userService';
 import { PlayResponse } from '../utils/interfaces/PlayResponse';
 import { CardDTO } from '../utils/DTOs/cardDTO';
 import { UserDTO } from '../utils/DTOs/userDTO';
@@ -21,20 +22,22 @@ export const start = async (player_ids: string[]) : Promise<string>=> {
 }
 
 export const play = async (player_id: string, game_id: string, coord_x: number, coord_y: number) : Promise<PlayResponse>=> {
-    const  updated_card = await cardsService.setChosenNumber(player_id, game_id, coord_x, coord_y); 
-    return { card: updated_card.card, message: StatusType.PLAY};
+    const updated_card = await cardsService.setChosenNumber(player_id, game_id, coord_x, coord_y); 
+    return { card: updated_card.card, message: StatusType.PLAY, winner: null};
 }
 
 export const bingo = async (player_id: string, game_id: string) : Promise<PlayResponse> => {
     const card = await cardsService.find(player_id, game_id);
     const win = cardsService.checkWin(card);
-    if (win) return notifyWin(card);
-    return { card: card.card, message: StatusType.DISQUALIFIED };
+    if (win) return notifyWin(player_id, card);
+    return { card: card.card, message: StatusType.DISQUALIFIED, winner: null };
+
 }
 
-export const notifyWin = async (card: CardDTO) : Promise<PlayResponse> => {
+export const notifyWin = async (player_id: string, card: CardDTO) : Promise<PlayResponse> => {
     await gamesRepository.update(card.game_id, card.player_id);
-    return { card: card.card, message: StatusType.WIN };
+    const winner = await usersService.find({ where: { id: player_id } });
+    return { card: card.card, message: StatusType.WIN, winner: {id: winner.id, email: winner.email} };
 }
 
 export const getCard = async (player_id: string, game_id: string) : Promise<CardDTO> => {

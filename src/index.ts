@@ -88,10 +88,10 @@ const main = async () => {
                         response as PutDataPacket;
                         const play_response : PlayResponse = await gamesService.play(player_id, response.data.game_id, response.data.coord_x, response.data.coord_y);
                         connectionManager.send(player_id, true, 'PUT', response.data.game_id, play_response.message, play_response.card);
-                        break;
                     } catch (error: any) {
-                        connectionManager.send(player_id, false,'PUT', '', error.message);
+                        connectionManager.send(player_id, false,'PUT', response.data.game_id, error.message);
                     }
+                    break;
                 case 'BINGO':
                     try {
                         response as BingoDataPacket;
@@ -104,22 +104,21 @@ const main = async () => {
                                 connectionManager.send(player.id, true, 'GET_PLAYERS', response.data.game_id, '', [[]], remaining_players);
                             })
                         } else {
-                            connectionManager.broadcast('BINGO', response.data.game_id, bingo_response.message, true);
+                            connectionManager.broadcast(response.data.game_id, 'BINGO', `${bingo_response.winner!.id}/${bingo_response.winner!.email}`, true);
                         }
-                        break;
                     } catch (error: any) {
                         connectionManager.send(player_id, false, 'BINGO', '', error.message);
                     }
+                    break;
                 case 'GET_CARD':
                     try {
                         response as CardDataPacket;
-                        console.log(response.data)
                         const card = await gamesService.getCard(response.data.player_id, response.data.game_id);
                         connectionManager.send(response.data.player_id, true, 'GET_CARD', response.data.game_id, '', card.card);
-                        break;
                     } catch (error: any) {
                         connectionManager.send(response.data.player_id, false, 'GET_CARD', response.data.game_id, error.message);
                     }
+                    break;
                 case 'GET_PLAYERS':
                     try {
                         response as PlayersDataPacket;
@@ -129,6 +128,9 @@ const main = async () => {
                     catch (error: any) {
                         connectionManager.send(player_id, false, 'GET_PLAYERS', response.game_id, error.message);
                     }
+                    break;
+                default:
+                    break;
             }
         });
 
