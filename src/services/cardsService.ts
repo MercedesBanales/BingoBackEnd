@@ -1,7 +1,12 @@
 import * as cardsRepository from '../dataAccess/repositories/cardsRepository';
 import { CardDTO } from '../utils/DTOs/cardDTO';
+import * as gameHandler from '../handlers/gameHandler';
+import { InvalidNumberException } from '../validators/exceptions/invalidNumberException';
 
 export const setChosenNumber = async (player_id: string, game_id: string, coord_x: number, coord_y: number) => {
+    const find = await cardsRepository.find({ playerId: player_id, gameId: game_id });
+    const sequence = gameHandler.getSequence(game_id);
+    if (!sequence.includes(find.card[coord_x][coord_y])) throw new InvalidNumberException('Number not in sequence');
     return await cardsRepository.update(player_id, game_id, coord_x, coord_y); 
 }
 

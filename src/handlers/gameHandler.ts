@@ -16,6 +16,12 @@ export const createGame = async (game_id: string) : Promise<void> => {
     activeGames.push({ game_id, players: players, bingo_sequence: [] });
 }
 
+export const removeGame = (game_id: string) : void => {
+    const game = activeGames.find(game => game.game_id === game_id);
+    if (!game) throw new NotFoundException('Game not found');
+    activeGames = activeGames.filter(game => game.game_id !== game_id);
+}
+
 export const generateRandomNumber = (game_id: string) : number[] => {
     const game: ActiveGame | undefined = activeGames.find(game => game.game_id === game_id);
     if (!game) throw new NotFoundException('Game not found');
@@ -41,3 +47,9 @@ export const startGameWithRandomNumbers = (game_id: string) => {
 
     }, 5000);
 };
+
+export const getSequence = (game_id: string) : number[] => {
+    const game: ActiveGame | undefined = activeGames.find(game => game.game_id === game_id);
+    if (!game) throw new NotFoundException('Game not found');
+    return game.bingo_sequence;
+}

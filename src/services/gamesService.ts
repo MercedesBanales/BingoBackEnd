@@ -3,7 +3,6 @@ import * as cardsService from './cardsService';
 import { PlayResponse } from '../utils/interfaces/PlayResponse';
 import { CardDTO } from '../utils/DTOs/cardDTO';
 import { UserDTO } from '../utils/DTOs/userDTO';
-import * as usersService from './userService';
 
 export enum StatusType {
     WIN= 'WIN',

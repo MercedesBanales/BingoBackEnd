@@ -87,7 +87,7 @@ const main = async () => {
                     try {
                         response as PutDataPacket;
                         const play_response : PlayResponse = await gamesService.play(player_id, response.data.game_id, response.data.coord_x, response.data.coord_y);
-                        connectionManager.send(player_id, true, 'PUT', '', play_response.message);
+                        connectionManager.send(player_id, true, 'PUT', response.data.game_id, play_response.message, play_response.card);
                         break;
                     } catch (error: any) {
                         connectionManager.send(player_id, false,'PUT', '', error.message);
@@ -96,16 +96,17 @@ const main = async () => {
                     try {
                         response as BingoDataPacket;
                         const bingo_response : PlayResponse = await gamesService.bingo(player_id, response.data.game_id);
-                        let success = true;
-                        if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) success = false;
-                        connectionManager.broadcast('BINGO', response.data.game_id, bingo_response.message, success);
+                        if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) {
+                            connectionManager.send(player_id, false, 'BINGO', '', 'You have been disqualified');
+                        } else {
+                            connectionManager.broadcast('BINGO', response.data.game_id, bingo_response.message, true);
+                        }
                         break;
                     } catch (error: any) {
                         connectionManager.send(player_id, false, 'BINGO', '', error.message);
                     }
                 case 'GET_CARD':
                     try {
-                        console.log(response)
                         response as CardDataPacket;
                         const card = await gamesService.getCard(player_id, response.data.game_id);
                         connectionManager.send(response.data.player_id, true, 'GET_CARD', response.data.game_id, '', card.card);
