@@ -6,7 +6,8 @@ import * as connectionManager from './helpers/connectionManager';
 import * as gamesService from './services/gamesService';
 import { PlayResponse } from './utils/interfaces/PlayResponse';
 import corsMiddleware from 'cors';
-import { BingoDataPacket, CardDataPacket, DataPacket, PlayersDataPacket, PutDataPacket } from './utils/interfaces/DataPacket';
+import { BingoDataPacket, CardDataPacket, PlayersDataPacket, PutDataPacket } from './utils/interfaces/DataPacket';
+import * as gameHandler from './handlers/gameHandler';
 
 const WebSocket = require('ws');
 const app = express();
@@ -79,8 +80,6 @@ const main = async () => {
             }
         }, MAX_WAIT_TIME);
 
-
-
         ws.on('message', async (message: any) => {
             const response = JSON.parse(message.toString());
             switch (response.action) {
@@ -99,7 +98,7 @@ const main = async () => {
                         const bingo_response : PlayResponse = await gamesService.bingo(player_id, response.data.game_id);
                         let success = true;
                         if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) success = false;
-                        connectionManager.broadcast(response.data.game_id, bingo_response.message, success);
+                        connectionManager.broadcast('BINGO', response.data.game_id, bingo_response.message, success);
                         break;
                     } catch (error: any) {
                         connectionManager.send(player_id, false, 'BINGO', '', error.message);

@@ -2,6 +2,7 @@ import { DataPacket } from "../utils/interfaces/DataPacket";
 import { NotFoundException } from "../validators/exceptions/notFoundException";
 import * as gamesService from '../services/gamesService';
 import { UserDTO } from "../utils/DTOs/userDTO";
+import * as gameHandler from '../handlers/gameHandler';
 
 export interface Connection {
     socket: WebSocket;
@@ -31,6 +32,7 @@ export const start = (game_id: string) : void => {
             send(connection.player_id, true, '', game_id, 'Game started')
         }
     });
+    gameHandler.startGameWithRandomNumbers(game_id);
 }
 
 export const disconnect = (socket: WebSocket) : void => {
@@ -41,10 +43,10 @@ export const getAvailablePlayersInLobby = () : Connection[] => {
     return filterConnections(connection => connection.status === 'AVAILABLE');
 }
 
-export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[]) : void=> {
+export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[], sequence?: number[]) : void=> {
     const connection = connections.find(connection => connection.player_id === player_id);
     if (connection) {
-        const data = JSON.stringify({ data: { message: message, game_id: game_id, card: card, players: players }, 
+        const data = JSON.stringify({ data: { message: message, game_id: game_id, card: card, players: players, sequence: sequence }, 
             type: 'RESPONSE', 
             action: action, 
             success: success } as DataPacket);
@@ -52,9 +54,9 @@ export const send = (player_id: string,  success: boolean, action?: string, game
     }
 }
 
-export const broadcast = (game_id: string, message: string, success: boolean) : void => {
+export const broadcast = (game_id: string, action: string, message: string, success: boolean, sequence?: number[]) : void => {
     const connectionsInLobby = filterConnections(connection => connection.game_id === game_id);
-    connectionsInLobby.forEach(connection => send(connection.player_id, success, 'BINGO', game_id, message));
+    connectionsInLobby.forEach(connection => send(connection.player_id, success, action, game_id, message, [[]], [], sequence));
 }
 
 export const disconnectAll = () : void=> {
@@ -80,4 +82,8 @@ export const getGamePlayers = async (game_id: string) : Promise<UserDTO[]> => {
 
 const filterConnections = (condition: (connection: Connection) => boolean) : Connection[] => {
     return connections.filter(condition);
+}
+
+export const find = (game_id: string) : boolean => {
+    return connections.some(connection => connection.game_id === game_id);
 }
