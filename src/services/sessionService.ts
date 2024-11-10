@@ -5,7 +5,7 @@ import * as sessionsRepository from '../dataAccess/repositories/sessionsReposito
 import { v4 as uuidv4 } from 'uuid';
 
 export const create = async (email: string, password: string): Promise<{token: string, id: string}> => {
-    const user: UserDTO = await userService.find(email, password);
+    const user: UserDTO = await userService.find({where: { email, password}});
     const session: SessionDTO = await sessionsRepository.find({ where: { UserId: user.id } });
     if (session.id !== "") return {token: await sessionsRepository.update(session.id, uuidv4()), id: user.id};
     const token = await sessionsRepository.create(user.id);

@@ -6,6 +6,7 @@ import * as connectionManager from './helpers/connectionManager';
 import * as gamesService from './services/gamesService';
 import { PlayResponse } from './utils/interfaces/PlayResponse';
 import corsMiddleware from 'cors';
+import { BingoDataPacket, CardDataPacket, DataPacket, PlayersDataPacket, PutDataPacket } from './utils/interfaces/DataPacket';
 
 const WebSocket = require('ws');
 const app = express();
@@ -69,7 +70,7 @@ const main = async () => {
             if (connectionManager.getCurrentPlayer(player_id).status === "PLAYING") return;
             if (availablePlayersInLobby.length < 2) {
                 console.log(`Not enough players in lobby. Disconnecting player ${player_id}`);
-                connectionManager.send(player_id, false, 'Game room did not get enough players. Closing room.');
+                connectionManager.send(player_id, false, '', '', 'Game room did not get enough players. Closing room.');
                 connectionManager.disconnectAll();
             } else {
                 const game_id = await gamesService.start(availablePlayersInLobby.map(player => player.player_id));
@@ -81,25 +82,46 @@ const main = async () => {
 
 
         ws.on('message', async (message: any) => {
-            const data = JSON.parse(message.toString());
-            switch (data.action) {
+            const response = JSON.parse(message.toString());
+            switch (response.action) {
                 case 'PUT':
                     try {
-                        const play_response : PlayResponse = await gamesService.play(player_id, data.game_id, data.coord_x, data.coord_y);
-                        connectionManager.send(player_id, true, play_response.message);
+                        response as PutDataPacket;
+                        const play_response : PlayResponse = await gamesService.play(player_id, response.data.game_id, response.data.coord_x, response.data.coord_y);
+                        connectionManager.send(player_id, true, 'PUT', '', play_response.message);
                         break;
                     } catch (error: any) {
-                        connectionManager.send(player_id, false, error.message);
+                        connectionManager.send(player_id, false,'PUT', '', error.message);
                     }
                 case 'BINGO':
                     try {
-                        const bingo_response : PlayResponse = await gamesService.bingo(player_id, data.game_id);
+                        response as BingoDataPacket;
+                        const bingo_response : PlayResponse = await gamesService.bingo(player_id, response.data.game_id);
                         let success = true;
                         if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) success = false;
-                        connectionManager.broadcast(data.game_id, bingo_response.message, success);
+                        connectionManager.broadcast(response.data.game_id, bingo_response.message, success);
                         break;
                     } catch (error: any) {
-                        connectionManager.send(player_id, false, error.message);
+                        connectionManager.send(player_id, false, 'BINGO', '', error.message);
+                    }
+                case 'GET_CARD':
+                    try {
+                        console.log(response)
+                        response as CardDataPacket;
+                        const card = await gamesService.getCard(player_id, response.data.game_id);
+                        connectionManager.send(response.data.player_id, true, 'GET_CARD', response.data.game_id, '', card.card);
+                        break;
+                    } catch (error: any) {
+                        connectionManager.send(response.data.player_id, false, 'GET_CARD', response.data.game_id, error.message);
+                    }
+                case 'GET_PLAYERS':
+                    try {
+                        response as PlayersDataPacket;
+                        const players = await connectionManager.getGamePlayers(response.data.game_id);
+                        connectionManager.send(player_id, true, 'GET_PLAYERS', '', '', [[]], players);
+                    }
+                    catch (error: any) {
+                        connectionManager.send(player_id, false, 'GET_PLAYERS', response.game_id, error.message);
                     }
             }
         });

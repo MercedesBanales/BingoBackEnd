@@ -1,5 +1,7 @@
 import { DataPacket } from "../utils/interfaces/DataPacket";
 import { NotFoundException } from "../validators/exceptions/notFoundException";
+import * as gamesService from '../services/gamesService';
+import { UserDTO } from "../utils/DTOs/userDTO";
 
 export interface Connection {
     socket: WebSocket;
@@ -26,7 +28,7 @@ export const start = (game_id: string) : void => {
         if (connection.status === 'AVAILABLE') {
             connection.status = 'PLAYING';
             connection.game_id = game_id;
-            send(connection.player_id, true, game_id, 'Game started')
+            send(connection.player_id, true, '', game_id, 'Game started')
         }
     });
 }
@@ -39,20 +41,20 @@ export const getAvailablePlayersInLobby = () : Connection[] => {
     return filterConnections(connection => connection.status === 'AVAILABLE');
 }
 
-export const send = (player_id: string,  success: boolean,  game_id?: string, message?: string) : void=> {
+export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[]) : void=> {
     const connection = connections.find(connection => connection.player_id === player_id);
     if (connection) {
-        const data = JSON.stringify({ data: { message, game_id }, 
+        const data = JSON.stringify({ data: { message: message, game_id: game_id, card: card, players: players }, 
             type: 'RESPONSE', 
-            action: null,
-            success: success} as DataPacket);
+            action: action, 
+            success: success } as DataPacket);
         connection.socket.send(data);
     }
 }
 
 export const broadcast = (game_id: string, message: string, success: boolean) : void => {
     const connectionsInLobby = filterConnections(connection => connection.game_id === game_id);
-    connectionsInLobby.forEach(connection => send(connection.player_id, success, game_id, message));
+    connectionsInLobby.forEach(connection => send(connection.player_id, success, 'BINGO', game_id, message));
 }
 
 export const disconnectAll = () : void=> {
@@ -70,6 +72,10 @@ export const getCurrentPlayer = (player_id: string) : Connection => {
     const connection = connections.find(connection => connection.player_id === player_id);
     if (connection) return connection;
     else throw new NotFoundException('Player not found');
+}
+
+export const getGamePlayers = async (game_id: string) : Promise<UserDTO[]> => {
+    return await gamesService.getPlayers(game_id);
 }
 
 const filterConnections = (condition: (connection: Connection) => boolean) : Connection[] => {

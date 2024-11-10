@@ -4,6 +4,7 @@ import { sequelize } from '../../config/mysql_db';
 import { User } from '../models/User';
 import { NotFoundException } from '../../validators/exceptions/notFoundException';
 import * as usersRepository from './usersRepository';
+import { UserDTO } from '../../utils/DTOs/userDTO';
 
 const INITIAL_GAME_STATUS = "in_progress";
 const FINAL_GAME_STATUS = "finished";
@@ -36,3 +37,16 @@ export const find = async (criteria: { where: { [key: string]: any } }): Promise
         players: game_players.map(game_player => game_player.getDataValue("UserId"))
     } as GameDTO
 };
+
+export const findMany = async (criteria: { where: { [key: string]: any } }): Promise<UserDTO[]> => {
+    const games = await sequelize.models.GameUser.findAll(criteria);
+    const players = await User.findAll({
+        where: { id: games.map(game => game.getDataValue("UserId")) }
+    });
+    return players.map(player => {
+        return {
+            id: player.getDataValue("id"),
+            email: player.getDataValue("email")
+        } as UserDTO
+    })
+}

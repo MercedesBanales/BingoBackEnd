@@ -2,6 +2,8 @@ import * as gamesRepository from '../dataAccess/repositories/gamesRepository';
 import * as cardsService from './cardsService';
 import { PlayResponse } from '../utils/interfaces/PlayResponse';
 import { CardDTO } from '../utils/DTOs/cardDTO';
+import { UserDTO } from '../utils/DTOs/userDTO';
+import * as usersService from './userService';
 
 export enum StatusType {
     WIN= 'WIN',
@@ -35,4 +37,13 @@ export const notifyWin = async (card: CardDTO) : Promise<PlayResponse> => {
     await gamesRepository.update(card.game_id, card.player_id);
     return { card: card.card, message: StatusType.WIN };
 }
+
+export const getCard = async (player_id: string, game_id: string) : Promise<CardDTO> => {
+    return await cardsService.find(player_id, game_id);
+}
+
+export const getPlayers = async (game_id: string) : Promise<UserDTO[]> => {
+    return await gamesRepository.findMany({where: { GameId: game_id }});
+}
+
 
