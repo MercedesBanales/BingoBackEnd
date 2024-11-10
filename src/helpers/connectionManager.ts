@@ -87,10 +87,9 @@ export const setAvailable = (player_id: string) : void => {
     else throw new NotFoundException('Player not found');
 }
 
-export const getCurrentPlayer = (player_id: string) : Connection => {
+export const getCurrentPlayer = (player_id: string) : Connection | undefined => {
     const connection = connections.find(connection => connection.player_id === player_id);
-    if (connection) return connection;
-    else throw new NotFoundException('Player not found');
+    return connection;
 }
 
 export const getGamePlayers = async (game_id: string) : Promise<UserDTO[]> => {

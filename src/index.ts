@@ -63,12 +63,14 @@ const main = async () => {
         connectionManager.connect(ws, player_id);
 
         setTimeout(() => {
+            if (!connectionManager.getCurrentPlayer(player_id)) return;
             connectionManager.setAvailable(player_id);
         }, MIN_WAIT_TIME);
 
         setTimeout(async () => {
             const availablePlayersInLobby = connectionManager.getAvailablePlayersInLobby();
-            if (connectionManager.getCurrentPlayer(player_id).status === "PLAYING") return;
+            const player = connectionManager.getCurrentPlayer(player_id);
+            if (!player || player.status === "PLAYING") return;
             if (availablePlayersInLobby.length < 2) {
                 console.log(`Not enough players in lobby. Disconnecting player ${player_id}`);
                 const res = {player_id: player_id, success: false, message: 'Not enough players in lobby'};
