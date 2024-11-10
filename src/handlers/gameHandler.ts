@@ -55,7 +55,7 @@ export const generateRandomNumber = (game_id: string) : string[] => {
 
 
 export const startGameWithRandomNumbers = (game_id: string) => {
-    const await = createGame(game_id);
+    const game = createGame(game_id);
     const interval_id = setInterval(() => {
         if (!connectionManager.find(game_id)) {
             clearInterval(interval_id);

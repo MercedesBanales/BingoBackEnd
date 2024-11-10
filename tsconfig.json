@@ -43,7 +43,8 @@
     // "resolveJsonModule": true,                        /* Enable importing .json files. */
     // "allowArbitraryExtensions": true,                 /* Enable importing files with any extension, provided a declaration file is present. */
     // "noResolve": true,     
-    "outDir": "./dist",                                 /* Disable loading files through <reference types="..." /> directives. */                           
+    "outDir": "./dist",     
+    /* Disable loading files through <reference types="..." /> directives. */                           
 
     /* JavaScript Support */
     // "allowJs": true,                                  /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */
@@ -108,4 +109,5 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   }
+
 }
