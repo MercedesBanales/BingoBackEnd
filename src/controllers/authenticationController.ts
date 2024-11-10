@@ -15,8 +15,8 @@ export const login = async (req: Request, res: Response) => {
 
     } catch (error:any) {
         let code = 500;
-        if (error instanceof NotFoundException) code = 404;
-        res.status(code).send({ message: error.message });
+        if (error instanceof NotFoundException) code = 400;
+        res.status(code).send(error.message);
     }
 }
 
