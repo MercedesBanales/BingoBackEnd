@@ -30,29 +30,35 @@ export const create = async (player_id: string, game_id: string): Promise<CardDT
 }
 
 const generateCard = (): number[][] => {
-    const numbers = Array.from({ length: parseInt(process.env.MAX_CARD_NUMBER!) }, (_, i) => i + 1);
+    const maxCardNumber = parseInt(process.env.MAX_CARD_NUMBER!);
+    const numRows = parseInt(process.env.MAX_ROW_LENGTH!);
+    const numCols = parseInt(process.env.MAX_COL_LENGTH!);
 
-    // Shuffle the numbers using Fisher-Yates algorithm
-    for (let i = numbers.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
-    }
+    const rangeSize = Math.floor(maxCardNumber / numCols); // Size of each column's range
 
-    const card: number[][] = [];
-    let counter = 0;
+    const card: number[][] = Array.from({ length: numRows }, () => []);
 
-    for (let row = 0; row < parseInt(process.env.MAX_ROW_LENGTH!); row++) {
-        const rowValues: (number)[] = [];
-        for (let col = 0; col < parseInt(process.env.MAX_COL_LENGTH!); col++) {
-            if (row === 2 && col === 2) {
-                rowValues.push(0); // Center space is free
+    for (let colIndex = 0; colIndex < numCols; colIndex++) {
+        const min = colIndex * rangeSize + 1;
+        const max = (colIndex === numCols - 1) ? maxCardNumber : min + rangeSize - 1;
+
+        const columnNumbers = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+
+        // Shuffle the numbers in the column using Fisher-Yates algorithm
+        for (let i = columnNumbers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [columnNumbers[i], columnNumbers[j]] = [columnNumbers[j], columnNumbers[i]];
+        }
+
+        for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
+            if (rowIndex === 2 && colIndex === 2) {
+                card[rowIndex][colIndex] = 0; // Center space is free
             } else {
-                rowValues.push(numbers[counter]);
-                counter++;
+                card[rowIndex][colIndex] = columnNumbers.pop()!;
             }
         }
-        card.push(rowValues);
     }
-
     return card;
 };
+
+

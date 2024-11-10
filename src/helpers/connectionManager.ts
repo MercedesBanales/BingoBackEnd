@@ -43,7 +43,7 @@ export const getAvailablePlayersInLobby = () : Connection[] => {
     return filterConnections(connection => connection.status === 'AVAILABLE');
 }
 
-export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[], sequence?: number[]) : void=> {
+export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[], sequence?: string[]) : void=> {
     const connection = connections.find(connection => connection.player_id === player_id);
     if (connection) {
         const data = JSON.stringify({ data: { message: message, game_id: game_id, card: card, players: players, sequence: sequence }, 
@@ -54,7 +54,7 @@ export const send = (player_id: string,  success: boolean, action?: string, game
     }
 }
 
-export const broadcast = (game_id: string, action: string, message: string, success: boolean, sequence?: number[]) : void => {
+export const broadcast = (game_id: string, action: string, message: string, success: boolean, sequence?: string[]) : void => {
     const connectionsInLobby = filterConnections(connection => connection.game_id === game_id);
     connectionsInLobby.forEach(connection => send(connection.player_id, success, action, game_id, message, [[]], [], sequence));
 }
