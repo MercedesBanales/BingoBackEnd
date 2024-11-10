@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { LoginRequest, LoginResponse } from '../apiModels/authentication';
 import { NotFoundException } from '../validators/exceptions/notFoundException';
-import { InvalidFormatException } from '../validators/exceptions/InvalidFormatException';
+import { InvalidFormatException } from '../validators/exceptions/invalidFormatException';
 import * as sessionService from '../services/sessionService';
 import { loginSchema } from '../utils/schemas/loginSchema';
 import dotenv from 'dotenv';

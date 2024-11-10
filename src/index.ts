@@ -38,8 +38,6 @@ const main = async () => {
     app.get("/", (req, res) => {
         res.send('Main');
     });
-
-    // await User.create({ email: "user@gmail.com", password: "1234" });
     
     server.listen(port, async () => {
         console.log(`Server running on ${process.env.URL}${port}`)
