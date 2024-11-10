@@ -7,7 +7,7 @@ import * as gamesService from './services/gamesService';
 import { PlayResponse } from './utils/interfaces/PlayResponse';
 import corsMiddleware from 'cors';
 import { BingoDataPacket, CardDataPacket, PlayersDataPacket, PutDataPacket } from './utils/interfaces/DataPacket';
-import * as gameHandler from './handlers/gameHandler';
+import { Response } from './helpers/connectionManager';
 
 const WebSocket = require('ws');
 const app = express();
@@ -71,7 +71,8 @@ const main = async () => {
             if (connectionManager.getCurrentPlayer(player_id).status === "PLAYING") return;
             if (availablePlayersInLobby.length < 2) {
                 console.log(`Not enough players in lobby. Disconnecting player ${player_id}`);
-                connectionManager.send(player_id, false, '', '', 'Game room did not get enough players. Closing room.');
+                const res = {player_id: player_id, success: false, message: 'Not enough players in lobby'};
+                connectionManager.send(res);
                 connectionManager.disconnectAll();
             } else {
                 const game_id = await gamesService.start(availablePlayersInLobby.map(player => player.player_id));
@@ -87,9 +88,11 @@ const main = async () => {
                     try {
                         response as PutDataPacket;
                         const play_response : PlayResponse = await gamesService.play(player_id, response.data.game_id, response.data.coord_x, response.data.coord_y);
-                        connectionManager.send(player_id, true, 'PUT', response.data.game_id, play_response.message, play_response.card);
+                        const res = {player_id: player_id, success: true, action: 'PUT', game_id: response.data.game_id, message: play_response.message, card: play_response.card};
+                        connectionManager.send(res);
                     } catch (error: any) {
-                        connectionManager.send(player_id, false,'PUT', response.data.game_id, error.message);
+                        const res = {player_id: player_id, success: false, action: 'PUT', game_id: response.data.game_id, message: error.message};
+                        connectionManager.send(res);
                     }
                     break;
                 case 'BINGO':
@@ -97,36 +100,43 @@ const main = async () => {
                         response as BingoDataPacket;
                         const bingo_response : PlayResponse = await gamesService.bingo(player_id, response.data.game_id);
                         if (bingo_response.message === gamesService.StatusType.DISQUALIFIED) {
-                            connectionManager.send(response.data.player_id, false, 'BINGO', response.data.game_id, 'You have been disqualified');
+                            const res = {player_id: player_id, success: false, action: 'BINGO', game_id: response.data.game_id, message: 'You have been disqualified'};
+                            connectionManager.send(res);
                             const players = await connectionManager.getGamePlayers(response.data.game_id);
                             const remaining_players = players.filter(player => player.id !== response.data.player_id);
                             remaining_players.forEach(async player => {
-                                connectionManager.send(player.id, true, 'GET_PLAYERS', response.data.game_id, '', [[]], remaining_players);
+                                const res: Response = {player_id: player.id, success: true, action: 'GET_PLAYERS', game_id: response.data.game_id, players: remaining_players}; 
+                                connectionManager.send(res);
                             })
                         } else {
                             connectionManager.broadcast(response.data.game_id, 'BINGO', `${bingo_response.winner!.id}/${bingo_response.winner!.email}`, true);
                         }
                     } catch (error: any) {
-                        connectionManager.send(player_id, false, 'BINGO', '', error.message);
+                        const res = {player_id: player_id, success: false, action: 'BINGO', message: error.message};
+                        connectionManager.send(res);
                     }
                     break;
                 case 'GET_CARD':
                     try {
                         response as CardDataPacket;
                         const card = await gamesService.getCard(response.data.player_id, response.data.game_id);
-                        connectionManager.send(response.data.player_id, true, 'GET_CARD', response.data.game_id, '', card.card);
+                        const res = {player_id: response.data.player_id, success: true, action: 'GET_CARD', game_id: response.data.game_id, card: card.card};
+                        connectionManager.send(res);
                     } catch (error: any) {
-                        connectionManager.send(response.data.player_id, false, 'GET_CARD', response.data.game_id, error.message);
+                        const res = {player_id: player_id, success: false, action: 'GET_CARD', game_id: response.data.game_id, message: error.message};
+                        connectionManager.send(res);
                     }
                     break;
                 case 'GET_PLAYERS':
                     try {
                         response as PlayersDataPacket;
                         const players = await connectionManager.getGamePlayers(response.data.game_id);
-                        connectionManager.send(player_id, true, 'GET_PLAYERS', '', '', [[]], players);
+                        const res = {player_id: player_id, success: true, action: 'GET_PLAYERS', game_id: response.data.game_id, players: players};
+                        connectionManager.send(res);
                     }
                     catch (error: any) {
-                        connectionManager.send(player_id, false, 'GET_PLAYERS', response.game_id, error.message);
+                        const res = {player_id: player_id, success: false, action: 'GET_PLAYERS', game_id: response.data.game_id, message: error.message};
+                        connectionManager.send(res);
                     }
                     break;
                 default:
@@ -135,7 +145,7 @@ const main = async () => {
         });
 
         ws.on('close', () => {
-            connectionManager.disconnect(ws);
+            connectionManager.disconnect(connection => connection.socket === ws);
             console.log('WebSocket connection closed');
         });
     })

@@ -11,6 +11,17 @@ export interface Connection {
     game_id: string | null;
 }
 
+export interface Response {
+    player_id: string;
+    success: boolean;
+    message?: string;
+    action?: string;
+    game_id?: string;
+    card?: number[][];
+    players?: UserDTO[];
+    sequence?: string[];
+}
+
 let connections: Connection[] = [];
 let gameStarting = false;
 
@@ -29,34 +40,40 @@ export const start = (game_id: string) : void => {
         if (connection.status === 'AVAILABLE') {
             connection.status = 'PLAYING';
             connection.game_id = game_id;
-            send(connection.player_id, true, '', game_id, 'Game started')
+            const res = { player_id: connection.player_id, success: true, message: 'Game started', game_id: game_id } as Response;
+            send(res)
         }
     });
     gameHandler.startGameWithRandomNumbers(game_id);
 }
 
-export const disconnect = (socket: WebSocket) : void => {
-    connections = connections.filter(connection => connection.socket !== socket);
+export const disconnect = (condition: (connection: Connection) => boolean) : void => {
+    const connectionsToClose = filterConnections(condition);
+    connectionsToClose.forEach(connection => connection.socket.close());
+    connections = connections.filter(connection => !condition(connection));
 }
 
 export const getAvailablePlayersInLobby = () : Connection[] => {
     return filterConnections(connection => connection.status === 'AVAILABLE');
 }
 
-export const send = (player_id: string,  success: boolean, action?: string, game_id?: string, message?: string, card?: number[][], players?: UserDTO[], sequence?: string[]) : void=> {
-    const connection = connections.find(connection => connection.player_id === player_id);
+export const send = (res: Response) : void=> {
+    const connection = connections.find(connection => connection.player_id === res.player_id);
     if (connection) {
-        const data = JSON.stringify({ data: { message: message, game_id: game_id, card: card, players: players, sequence: sequence }, 
+        const data = JSON.stringify({ data: { message: res.message, game_id: res.game_id, card: res.card, players: res.players, sequence: res.sequence }, 
             type: 'RESPONSE', 
-            action: action, 
-            success: success } as DataPacket);
+            action: res.action, 
+            success: res.success } as DataPacket);
         connection.socket.send(data);
     }
 }
 
 export const broadcast = (game_id: string, action: string, message: string, success: boolean, sequence?: string[]) : void => {
     const connectionsInLobby = filterConnections(connection => connection.game_id === game_id);
-    connectionsInLobby.forEach(connection => send(connection.player_id, success, action, game_id, message, [[]], [], sequence));
+    connectionsInLobby.forEach(connection => {
+        const res = { player_id: connection.player_id, success, action, game_id, message, sequence } as Response;
+        send(res)
+    });
 }
 
 export const disconnectAll = () : void=> {

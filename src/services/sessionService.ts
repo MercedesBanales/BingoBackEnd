@@ -3,6 +3,7 @@ import { UserDTO } from '../utils/DTOs/userDTO';
 import { SessionDTO } from '../utils/DTOs/sessionDTO';
 import * as sessionsRepository from '../dataAccess/repositories/sessionsRepository';
 import { v4 as uuidv4 } from 'uuid';
+import * as connectionManager from '../helpers/connectionManager';
 
 export const create = async (email: string, password: string): Promise<{token: string, id: string}> => {
     const user: UserDTO = await userService.find({where: { email, password}});
@@ -14,6 +15,7 @@ export const create = async (email: string, password: string): Promise<{token: s
 
 export const remove = async (token: string): Promise<void> => {
     const session = await sessionsRepository.find({ where: { token: token } });
+    connectionManager.disconnect(connection => connection.player_id === session.userId);
     await sessionsRepository.update(session!.id, null);
 }
 
