@@ -27,8 +27,7 @@ function generateMockCard() {
         }
       }
       card.push(column);
-    });
-  
+    });  
     return card;
   }
   
@@ -77,4 +76,32 @@ describe('start', () => {
       });
     });
   });
+
+  describe('bingo', () => {
+    it('should notify the winner if the player wins', async () => {
+      const mockPlayerId = 'player1';
+      const mockGameId = 'game123';
+      const mockCard = {
+        gameId: mockGameId,
+        playerId: mockPlayerId,
+        card: generateMockCard()
+      };
+      cardsService.find.mockResolvedValue(mockCard);
+      cardsService.checkWin.mockReturnValue(true);
+      usersService.find.mockResolvedValue({ id: mockPlayerId, email: 'player1@example.com' });
+
+      const result = await gameService.bingo(mockPlayerId, mockGameId);
+
+      expect(cardsService.find).toHaveBeenCalledWith(mockPlayerId, mockGameId);
+      expect(cardsService.checkWin).toHaveBeenCalledWith({card: mockCard.card, gameId: mockGameId, playerId: mockPlayerId});
+      expect(usersService.find).toHaveBeenCalledWith({ where: { id: mockPlayerId } });
+      expect(result).toEqual({
+        card: mockCard.card,
+        message: StatusType.WIN,
+        winner: { id: mockPlayerId, email: 'player1@example.com' }
+      });
+    });
+  });
+
+  
   
