@@ -123,5 +123,24 @@ describe('start', () => {
     });
   });
 
+  describe('getCard', () => {
+    it('should return the card for the player', async () => {
+      const mockPlayerId = 'player1';
+      const mockGameId = 'game123';
+      const mockCard = {
+        gameId: mockGameId,
+        playerId: mockPlayerId,
+        card: generateMockCard()
+      };
+
+      cardsService.find.mockResolvedValue(mockCard);
+
+      const result = await gameService.getCard(mockPlayerId, mockGameId);
+
+      expect(cardsService.find).toHaveBeenCalledWith(mockPlayerId, mockGameId);
+      expect(result).toEqual(mockCard);
+    });
+  });
+
   
   
