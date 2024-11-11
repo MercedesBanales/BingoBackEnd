@@ -142,5 +142,22 @@ describe('start', () => {
     });
   });
 
+  describe('getPlayers', () => {
+    it('should return the list of players for a given game', async () => {
+      const mockGameId = 'game123';
+      const mockPlayers = [
+        { id: 'player1', email: 'player1@example.com' },
+        { id: 'player2', email: 'player2@example.com' }
+      ];
+
+      gamesRepository.findMany.mockResolvedValue(mockPlayers);
+
+      const result = await gameService.getPlayers(mockGameId);
+
+      expect(gamesRepository.findMany).toHaveBeenCalledWith({ where: { GameId: mockGameId } });
+      expect(result).toEqual(mockPlayers);
+    });
+  });
+
   
   
