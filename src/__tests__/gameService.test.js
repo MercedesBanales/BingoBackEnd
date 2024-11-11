@@ -101,6 +101,26 @@ describe('start', () => {
         winner: { id: mockPlayerId, email: 'player1@example.com' }
       });
     });
+
+    it('should return disqualified if the player did not win', async () => {
+      const mockPlayerId = 'player1';
+      const mockGameId = 'game123';
+      const mockCard = {
+        gameId: mockGameId,
+        playerId: mockPlayerId,
+        card: generateMockCard()
+      };
+      cardsService.find.mockResolvedValue(mockCard);
+      cardsService.checkWin.mockReturnValue(false);
+
+      const result = await gameService.bingo(mockPlayerId, mockGameId);
+
+      expect(result).toEqual({
+        card: mockCard.card,
+        message: StatusType.DISQUALIFIED,
+        winner: null
+      });
+    });
   });
 
   
